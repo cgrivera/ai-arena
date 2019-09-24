@@ -1,0 +1,17 @@
+*.pyc
+*.rdb
+*.h5
+*.hdf5
+*.npz
+*~
+*#
+*.idea
+*.xml
+.DS_Store
+__pycache__
+*.egg-info
+*.orig
+*.png
+logs
+dev
+log_comms
