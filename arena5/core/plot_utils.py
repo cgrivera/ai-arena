@@ -7,10 +7,19 @@ import random, colorsys
 #saving to filename
 def plot_policy_records(records, windows, alphas, filename, colors=None, offsets=None):
 
+	default_colors = []
+	hues = [1, 4, 7, 10, 3, 6, 9, 12, 2, 5, 8, 11]
+	for h in hues:
+		default_colors.append(randomRGBPure(float(h)/12.0))
+
 	if colors is None:
 		colors = []
+		idx = 0
 		for pr in records:
-			colors.append(randomRGBPure())
+			colors.append(default_colors[idx])
+			idx += 1
+			if idx >= len(default_colors):
+				idx = 0
 
 	if offsets is None:
 		offsets = []
@@ -53,8 +62,8 @@ def plot_policy_records(records, windows, alphas, filename, colors=None, offsets
 	plt.savefig(filename)
 
 
-def randomRGBPure():
-    h = random.random()
+def randomRGBPure(hue=None):
+    h = random.random() if hue is None else hue
     s = random.uniform(0.8,0.9)
     v = random.uniform(0.8,0.9)
     r, g, b = colorsys.hsv_to_rgb(h, s, v)
