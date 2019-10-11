@@ -6,6 +6,7 @@ from arena5.core.env_process import EnvironmentProcess
 
 from arena5.algos.random.random_policy import RandomPolicy
 from arena5.algos.ppo.ppo import PPOPolicy
+from arena5.algos.hppo.hppo import HPPOPolicy
 
 from arena5.core.policy_record import PolicyRecord, get_dir_for_policy
 
@@ -158,6 +159,9 @@ class WorkerStem(object):
 
 			elif pol_type == "ppo-lstm":
 				policy = PPOPolicy(proxyenv, policy_group_comm, True)
+
+			elif pol_type == "hppo" or pol_type == "hippo":
+				policy = HPPOPolicy(proxyenv, policy_group_comm)
 
 			# TODO: other policy types here, including custom
 
