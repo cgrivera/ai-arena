@@ -26,12 +26,12 @@ class HPPOPolicy():
 
         state_size = env.observation_space.shape
         action_size_behavior = env.action_space.shape
-        self.b_agent_attack = BehaviorModel(state_size, action_size_behavior,  label='attack')
-        self.b_agent_evade = BehaviorModel(state_size, action_size_behavior, label='evade')
-        self.b_agent_transit = BehaviorModel(state_size, action_size_behavior,  label='transit')
+        self.b_agent_attack = BehaviorModel(state_size, action_size_behavior,  self.comm, label='attack')
+        self.b_agent_evade = BehaviorModel(state_size, action_size_behavior, self.comm, label='evade')
+        self.b_agent_transit = BehaviorModel(state_size, action_size_behavior,  self.comm, label='transit')
 
         # Define meta agent
-        self.m_agent = MetaAgent(state_size, [self.b_agent_attack, self.b_agent_evade, self.b_agent_transit])
+        self.m_agent = MetaAgent(state_size, [self.b_agent_attack, self.b_agent_evade, self.b_agent_transit], self.comm)
 
         #constants
         self.discount_factor = 0.99
@@ -125,7 +125,7 @@ class HPPOPolicy():
                         model.train(batch["ob"], batch["ac"], batch["vtarg"], batch["atarg"], 1.0)
 
 
-def general_actor_critic(input_shape_vec, act_output_shape, learn_rate=[0.001, 0.001], trainable=True, label=""):
+def general_actor_critic(input_shape_vec, act_output_shape, comm, learn_rate=[0.001, 0.001], trainable=True, label=""):
 
     sess = K.get_session()
     np.random.seed(0)
@@ -134,16 +134,16 @@ def general_actor_critic(input_shape_vec, act_output_shape, learn_rate=[0.001, 0
     # network 1 (new policy)
     with tf.variable_scope(label+"pi", reuse=False):
         inp = Input(shape=input_shape_vec)  # [5,6,3]
-        rc_lyr = Lambda(lambda x:  ned_to_ripCoords_tf(x, 4000))(inp)
-        trunk_x = Reshape([input_shape_vec[0], input_shape_vec[1] * 4])(rc_lyr)
+        #rc_lyr = Lambda(lambda x:  ned_to_ripCoords_tf(x, 4000))(inp)
+        trunk_x = Reshape([input_shape_vec[0], input_shape_vec[1] * 3])(inp)
         trunk_x = LSTM(128)(trunk_x)
         dist, sample_action_op, action_ph, value_output = ppo_continuous(3, trunk_x)
 
     #network 2 (old policy)
     with tf.variable_scope(label+"pi_old", reuse=False):
         inp_old = Input(shape=input_shape_vec)  # [5,6,3]
-        rc_lyr = Lambda(lambda x:  ned_to_ripCoords_tf(x, 4000))(inp_old)
-        trunk_x = Reshape([input_shape_vec[0], input_shape_vec[1] * 4])(rc_lyr)
+        #rc_lyr = Lambda(lambda x:  ned_to_ripCoords_tf(x, 4000))(inp_old)
+        trunk_x = Reshape([input_shape_vec[0], input_shape_vec[1] * 3])(inp_old)
         trunk_x = LSTM(128)(trunk_x)
         dist_old, sample_action_op_old, action_ph_old, value_output_old = ppo_continuous(3, trunk_x)
 
@@ -158,7 +158,7 @@ def general_actor_critic(input_shape_vec, act_output_shape, learn_rate=[0.001, 0
     #gradient
     with tf.variable_scope("grad", reuse=False):
         gradient = tf_util.flatgrad(loss, tf_util.get_trainable_vars(label+"pi"))
-        adam = MpiAdam(tf_util.get_trainable_vars(label+"pi"), epsilon=0.00001, sess=sess, comm="something")
+        adam = MpiAdam(tf_util.get_trainable_vars(label+"pi"), epsilon=0.00001, sess=sess, comm=comm)
 
     #method for sync'ing the two policies
     assign_old_eq_new = tf_util.function([], [], updates=[tf.assign(oldv, newv) for (oldv, newv) in
@@ -234,13 +234,13 @@ def ppo_continuous_loss(new_dist, old_dist, value_output, actions_ph, alpha_ph, 
 
 
 class BehaviorModel:
-    def __init__(self, input_shape, output_shape, label='behavior'):
+    def __init__(self, input_shape, output_shape, comm, label='behavior'):
         self.label = label
         self.input_shape = input_shape
         self.output_shape = output_shape
 
         # These are all methods!  Use them to interact with the ppo models.
-        self.sync_weights, self.sample_action, self.sample_value, self.train = general_actor_critic(self.input_shape, self.output_shape, label=self.label)
+        self.sync_weights, self.sample_action, self.sample_value, self.train = general_actor_critic(self.input_shape, self.output_shape, comm, label=self.label)
 
     def get_action(self, state):
         action = self.sample_action(np.asarray([state]))[0]  # batch dimension 1
@@ -248,11 +248,11 @@ class BehaviorModel:
 
 
 class MetaAgent:
-    def __init__(self, input_shape, behavior_primitive_mdls):
+    def __init__(self, input_shape, behavior_primitive_mdls, comm):
         self.behavior_primitive_mdls = behavior_primitive_mdls
         self.input_shape = input_shape
         self.output_shape = len(behavior_primitive_mdls)
-        self.sync_weights, self.sample_action, self.sample_value, self.train = general_actor_critic(self.input_shape, self.output_shape, label="meta")
+        self.sync_weights, self.sample_action, self.sample_value, self.train = general_actor_critic(self.input_shape, self.output_shape, comm, label="meta")
 
     def get_action(self, state):
         meta_action = self.sample_action(np.asarray([state]))[0]
