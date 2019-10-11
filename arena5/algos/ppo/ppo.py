@@ -1,18 +1,25 @@
 import random, os
 
 from arena5.algos.ppo.ppo1_mod import PPO1
-from stable_baselines.common.policies import MlpPolicy, CnnPolicy
+from stable_baselines.common.policies import MlpPolicy, CnnPolicy, MlpLstmPolicy, CnnLstmPolicy
 
 class PPOPolicy():
 
-	def __init__(self, env, policy_comm):
+	def __init__(self, env, policy_comm, use_lstm=False):
 		self.env = env
 		self.comm = policy_comm
 
-		if len(self.env.observation_space.shape) > 1:
-			pcy = CnnPolicy
+		if use_lstm:
+			if len(self.env.observation_space.shape) > 2:
+				pcy = CnnLstmPolicy
+			else:
+				pcy = MlpLstmPolicy
+
 		else:
-			pcy = MlpPolicy
+			if len(self.env.observation_space.shape) > 1:
+				pcy = CnnPolicy
+			else:
+				pcy = MlpPolicy
 
 		self.model = PPO1(pcy, env, policy_comm, timesteps_per_actorbatch=128, clip_param=0.2, entcoeff=0.01, 
 			optim_epochs=4, optim_stepsize=1e-3, optim_batchsize=64, gamma=0.99, lam=0.95, schedule='linear', 

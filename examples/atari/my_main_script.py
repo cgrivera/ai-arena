@@ -11,6 +11,6 @@ arena = make_stem(cfg.MAKE_ENV_LOCATION, cfg.LOG_COMMS_DIR, cfg.OBS_SPACES, cfg.
 
 # --- only the root process will get beyond this point ---
 
-match_list = [[1] for _ in range(5)]
-policy_types = {1:"ppo"}
+match_list = [[1] for _ in range(3)]
+policy_types = {1:"random"}
 arena.kickoff(match_list, policy_types, 2000000)

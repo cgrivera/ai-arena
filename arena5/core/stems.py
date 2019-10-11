@@ -156,6 +156,9 @@ class WorkerStem(object):
 			elif pol_type == "ppo":
 				policy = PPOPolicy(proxyenv, policy_group_comm)
 
+			elif pol_type == "ppo-lstm":
+				policy = PPOPolicy(proxyenv, policy_group_comm, True)
+
 			# TODO: other policy types here, including custom
 
 			# compute full log comms directory for this policy
