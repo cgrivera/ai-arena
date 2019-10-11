@@ -1,6 +1,5 @@
 import random, os
 
-from arena5.algos.hppo.ppo1_mod import PPO1
 from stable_baselines.common.policies import MlpPolicy, CnnPolicy
 from stable_baselines.common import tf_util, zipsame
 from stable_baselines.common.distributions import DiagGaussianProbabilityDistribution
@@ -21,8 +20,8 @@ class HPPOPolicy():
 		self.env = env
 		self.comm = policy_comm
 
-		state_size = env.observation_space
-		action_size_behavior = env.action_space
+		state_size = env.observation_space.shape
+		action_size_behavior = env.action_space.shape
 		self.b_agent_attack = BehaviorModel(state_size, action_size_behavior,  label='attack')
     	self.b_agent_evade = BehaviorModel(state_size, action_size_behavior, label='evade')
     	self.b_agent_transit = BehaviorModel(state_size, action_size_behavior,  label='transit')
@@ -153,12 +152,12 @@ def general_actor_critic(input_shape_vec, act_output_shape, learn_rate=[0.001, 0
     vtarg = tf.placeholder(tf.float32,[None]) #target value placeholder
 
     #loss
-    loss = ppo_continuous_loss(dist, dist_old, value_output, actions_ph, alpha_ph, adv_ph, vtarg)
+    loss = ppo_continuous_loss(dist, dist_old, value_output, action_ph, alpha_ph, adv_ph, vtarg)
 
     #gradient
     with tf.variable_scope("grad", reuse=False):
         gradient = tf_util.flatgrad(loss, tf_util.get_trainable_vars(label+"pi"))
-        adam = MpiAdam(tf_util.get_trainable_vars(label+"pi"), epsilon=0.00001, sess=sess, name="pv_adam")
+        adam = MpiAdam(tf_util.get_trainable_vars(label+"pi"), epsilon=0.00001, sess=sess)
             
 
     #method for sync'ing the two policies
@@ -199,9 +198,8 @@ def general_actor_critic(input_shape_vec, act_output_shape, learn_rate=[0.001, 0
 
 
     #initial sync
-    self.adam.sync()
+    adam.sync()
     sync_weights()
-
 
     return sync_weights, sample_action, sample_value, train
 
@@ -217,7 +215,7 @@ def ppo_continuous(num_actions, previous_layer):
 	    distribution = DiagGaussianProbabilityDistribution(means_and_logstd)
 
         #sample op
-        sample_action_op = pi_dist.sample()
+        sample_action_op = distribution.sample()
 
         #value
         value_output = Dense(1)(previous_layer)
@@ -230,7 +228,7 @@ def ppo_continuous_loss(new_dist, old_dist, value_output, actions_ph, alpha_ph, 
         surr1 = ratio * adv_ph
         surr2 = tf.clip_by_value(ratio, 1.0 - epsilon, 1.0 + epsilon) * adv_ph
         ploss = - tf.reduce_mean(tf.minimum(surr1, surr2))
-        vloss = tf.reduce_mean(tf.square(value - val_ph))
+        vloss = tf.reduce_mean(tf.square(value_output - val_ph))
         loss = ploss + vloss
 
         return loss
