@@ -13,7 +13,7 @@ from stable_baselines.common import Dataset
 from tensorflow.keras import backend as K
 from stable_baselines.common.mpi_adam import MpiAdam
 from stable_baselines.common import tf_util, zipsame
-
+from tensorflow.keras.backend import set_session
 
 ORTHO_01 = Orthogonal(0.01)
 
@@ -21,6 +21,13 @@ ORTHO_01 = Orthogonal(0.01)
 class HPPOPolicy():
 
     def __init__(self, env, policy_comm):
+
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
+        config.log_device_placement = True  # to log device placement (on which device the operation ran)
+        sess = tf.Session(config=config)
+        set_session(sess)  # set this TensorFlow session as the default session for Keras
+
         self.env = env
         self.comm = policy_comm
 
@@ -61,11 +68,10 @@ class HPPOPolicy():
 
             state = self.env.reset()
 
-            print('STATE SHAPE:', state.shape)
-
             done = False
             while not done:
                 complete_action, meta_action, beh_actions = self.m_agent.get_action(state)
+
                 next_state, reward, done, info = self.env.step(complete_action)
 
                 training_state["meta"].append(state)
@@ -118,11 +124,13 @@ class HPPOPolicy():
                 training_advantages[network] = advantages
 
                 #train this model
-                dataset = Dataset(dict(ob=states, ac=actions, atarg=advantages, vtarg=target), shuffle=True)
+                dataset = Dataset(dict(ob=np.asarray(states), ac=np.asarray(actions), atarg=np.asarray(advantages), vtarg=np.asarray(target)), shuffle=True)
 
                 for k in range(4):
-                    for i, batch in enumerate(dataset.iterate_once(self.batch_size)):
+                    for i, batch in enumerate(dataset.iterate_once(len(states))):
                         model.train(batch["ob"], batch["ac"], batch["vtarg"], batch["atarg"], 1.0)
+
+            print('FINISHED TRAINING EPISODE')
 
 
 def general_actor_critic(input_shape_vec, act_output_shape, comm, learn_rate=[0.001, 0.001], trainable=True, label=""):
@@ -132,7 +140,7 @@ def general_actor_critic(input_shape_vec, act_output_shape, comm, learn_rate=[0.
     tf.set_random_seed(0)
 
     # network 1 (new policy)
-    with tf.variable_scope(label+"pi_new", reuse=False):
+    with tf.variable_scope(label+"_pi_new", reuse=False):
         inp = Input(shape=input_shape_vec)  # [5,6,3]
         #rc_lyr = Lambda(lambda x:  ned_to_ripCoords_tf(x, 4000))(inp)
         trunk_x = Reshape([input_shape_vec[0], input_shape_vec[1] * 3])(inp)
@@ -140,7 +148,7 @@ def general_actor_critic(input_shape_vec, act_output_shape, comm, learn_rate=[0.
         dist, sample_action_op, action_ph, value_output = ppo_continuous(3, trunk_x)
 
     #network 2 (old policy)
-    with tf.variable_scope(label+"pi_old", reuse=False):
+    with tf.variable_scope(label+"_pi_old", reuse=False):
         inp_old = Input(shape=input_shape_vec)  # [5,6,3]
         #rc_lyr = Lambda(lambda x:  ned_to_ripCoords_tf(x, 4000))(inp_old)
         trunk_x = Reshape([input_shape_vec[0], input_shape_vec[1] * 3])(inp_old)
@@ -157,12 +165,12 @@ def general_actor_critic(input_shape_vec, act_output_shape, comm, learn_rate=[0.
 
     #gradient
     with tf.variable_scope("grad", reuse=False):
-        gradient = tf_util.flatgrad(loss, tf_util.get_trainable_vars(label+"pi_new"))
-        adam = MpiAdam(tf_util.get_trainable_vars(label+"pi_new"), epsilon=0.00001, sess=sess, comm=comm)
+        gradient = tf_util.flatgrad(loss, tf_util.get_trainable_vars(label+"_pi_new"))
+        adam = MpiAdam(tf_util.get_trainable_vars(label+"_pi_new"), epsilon=0.00001, sess=sess, comm=comm)
 
     #method for sync'ing the two policies
     assign_old_eq_new = tf_util.function([], [], updates=[tf.assign(oldv, newv) for (oldv, newv) in
-                                                          zipsame(tf_util.get_globals_vars(label+"pi_old"), tf_util.get_globals_vars(label+"pi_new"))])
+                                                          zipsame(tf_util.get_globals_vars(label+"_pi_old"), tf_util.get_globals_vars(label+"_pi_new"))])
 
     #initialize all the things
     init_op = tf.global_variables_initializer()
@@ -249,16 +257,20 @@ class BehaviorModel:
 
 class MetaAgent:
     def __init__(self, input_shape, behavior_primitive_mdls, comm):
+        self.label = "meta"
         self.behavior_primitive_mdls = behavior_primitive_mdls
         self.input_shape = input_shape
         self.output_shape = len(behavior_primitive_mdls)
-        self.sync_weights, self.sample_action, self.sample_value, self.train = general_actor_critic(self.input_shape, self.output_shape, comm, label="meta")
+        self.sync_weights, self.sample_action, self.sample_value, self.train = general_actor_critic(self.input_shape, self.output_shape, comm, label=self.label)
 
     def get_action(self, state):
         meta_action = self.sample_action(np.asarray([state]))[0]
         beh_actions = np.array([bm.get_action(state) for bm in self.behavior_primitive_mdls])
 
         meta_action_softmax = np.exp(meta_action)/sum(np.exp(meta_action))
-        complete_action = np.tensordot(meta_action_softmax, beh_actions, axes=0)
+
+        # Should be doing a vectorized dot product
+        complete_action = np.tensordot(beh_actions, np.expand_dims(meta_action_softmax, axis=0), axes=[0, 1])
+        # complete_action = np.tensordot(meta_action_softmax, beh_actions, axes=[0, 1])
 
         return complete_action, meta_action, beh_actions
