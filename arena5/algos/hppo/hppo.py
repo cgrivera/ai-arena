@@ -2,6 +2,7 @@ import random
 import os
 import numpy as np
 from arena5.algos.hppo.utils import ned_to_ripCoords_tf
+from arena5.algos.hppo.GAE import GAE
 import tensorflow as tf
 from stable_baselines.common.policies import MlpPolicy, CnnPolicy
 from stable_baselines.common import tf_util, zipsame
@@ -89,9 +90,9 @@ class HPPOPolicy():
 
                 state = next_state
 
-            #now we have batches of data: compute the values and advantages
-            training_value = {"meta": None, "attack": None, "evade": None, "transit": None}
-            training_advantages = {"meta": None, "attack": None, "evade": None, "transit": None}
+            # #now we have batches of data: compute the values and advantages
+            # training_value = {"meta": None, "attack": None, "evade": None, "transit": None}
+            # training_advantages = {"meta": None, "attack": None, "evade": None, "transit": None}
 
             #compute advantages and values
             models = [self.b_agent_attack, self.b_agent_evade, self.b_agent_transit, self.m_agent]
@@ -105,23 +106,11 @@ class HPPOPolicy():
                 next_states = training_next_state[network]
                 done = training_done[network]
 
-                value = model.sample_value(states)
-                next_value = model.sample_value(next_states)
+                # Convert done bools to ints and invert
+                done_int = np.invert(done).astype(np.int)
 
-                target = np.zeros(len(states))
-                advantages = np.zeros(len(states))
-
-                for i in range(len(states)):
-                    if done[i]:
-                        advantages[i] = reward[i] - value[i]
-                        target[i] = reward[i]
-
-                    else:
-                        advantages[i] = reward[i] + self.discount_factor*next_value[i] - value[i]
-                        target[i] = reward[i] + self.discount_factor*next_value[i]
-
-                training_value[network] = target
-                training_advantages[network] = advantages
+                # Generalized advantage estimation (gets advantages to train on and value estimates)
+                target, advantages = GAE(states, actions, reward, next_states, done_int, model.sample_value, T=128, y=0.99, lam=0.95, use_Q=False)
 
                 #train this model
                 dataset = Dataset(dict(ob=np.asarray(states), ac=np.asarray(actions), atarg=np.asarray(advantages), vtarg=np.asarray(target)), shuffle=True)
