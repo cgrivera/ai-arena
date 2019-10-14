@@ -132,7 +132,7 @@ def general_actor_critic(input_shape_vec, act_output_shape, comm, learn_rate=[0.
     tf.set_random_seed(0)
 
     # network 1 (new policy)
-    with tf.variable_scope(label+"pi", reuse=False):
+    with tf.variable_scope(label+"pi_new", reuse=False):
         inp = Input(shape=input_shape_vec)  # [5,6,3]
         #rc_lyr = Lambda(lambda x:  ned_to_ripCoords_tf(x, 4000))(inp)
         trunk_x = Reshape([input_shape_vec[0], input_shape_vec[1] * 3])(inp)
@@ -157,12 +157,12 @@ def general_actor_critic(input_shape_vec, act_output_shape, comm, learn_rate=[0.
 
     #gradient
     with tf.variable_scope("grad", reuse=False):
-        gradient = tf_util.flatgrad(loss, tf_util.get_trainable_vars(label+"pi"))
-        adam = MpiAdam(tf_util.get_trainable_vars(label+"pi"), epsilon=0.00001, sess=sess, comm=comm)
+        gradient = tf_util.flatgrad(loss, tf_util.get_trainable_vars(label+"pi_new"))
+        adam = MpiAdam(tf_util.get_trainable_vars(label+"pi_new"), epsilon=0.00001, sess=sess, comm=comm)
 
     #method for sync'ing the two policies
     assign_old_eq_new = tf_util.function([], [], updates=[tf.assign(oldv, newv) for (oldv, newv) in
-                                                          zipsame(tf_util.get_globals_vars(label+"pi_old"), tf_util.get_globals_vars(label+"pi"))])
+                                                          zipsame(tf_util.get_globals_vars(label+"pi_old"), tf_util.get_globals_vars(label+"pi_new"))])
 
     #initialize all the things
     init_op = tf.global_variables_initializer()
