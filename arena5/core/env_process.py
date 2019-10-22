@@ -4,17 +4,21 @@ from arena5.core.utils import mpi_print
 
 class EnvironmentProcess():
 
-	def __init__(self, make_env_location, global_comm, local_comm, match_root_rank):
+	def __init__(self, make_env_method, global_comm, local_comm, match_root_rank, call_render=False):
 
-		sys.path.append(make_env_location)
-		from make_env import make_env
-		self.env = make_env()
+		if isinstance(make_env_method, str):
+			sys.path.append(make_env_method)
+			from make_env import make_env
+			self.env = make_env()
+		else:
+			self.env = make_env_method()
 
 		mpi_print("made env")
 
 		self.global_comm = global_comm
 		self.local_comm = local_comm
 		self.match_root_rank = match_root_rank
+		self.call_render = call_render
 
 	def proxy_sync(self):
 		self.states = self.env.reset()
@@ -26,18 +30,30 @@ class EnvironmentProcess():
 		for stp in range(num_steps):
 
 			#get all actions
-			actions = [-1, [0]]
+			actions = [[-1], [[0]]]
 			actions = self.local_comm.gather(actions, root=self.match_root_rank)
 
+			#some entries may represent multiple entities- convert all to single entity
+			entity_actions = []
+			for entry in actions:
+				idxs = entry[0]
+				actions_for_idxs = entry[1]
+
+				for i in range(len(idxs)):
+					entity_actions.append([idxs[i], actions_for_idxs[i]])
+
 			#sort actions by entity id
-			actions = sorted(actions, key=lambda x: x[0])
-			actions = [x[1] for x in actions[1:]]
+			entity_actions = sorted(entity_actions, key=lambda x: x[0])
+
+			#discard the first action, which is a dummy provided by this processes
+			entity_actions = [x[1] for x in entity_actions[1:]]
 
 			#step
-			new_states, rewards, done, infos = self.env.step(actions)
+			new_states, rewards, done, infos = self.env.step(entity_actions)
 
 			# RENDER HERE
-			#self.env.render()
+			if self.call_render:
+				self.env.render()
 
 			#send results back
 			self.local_comm.bcast([new_states, rewards, done, infos], root=self.match_root_rank)

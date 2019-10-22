@@ -135,7 +135,7 @@ class TouchdownEnv():
 				blue_reward -= 1.0
 
 		done = done or self.epstep>=1500
-		rewards = [[blue_reward, blue_reward] for p in self.blue_team] + [[-blue_reward, -blue_reward] for p in self.red_team]
+		rewards = [blue_reward for p in self.blue_team] + [-blue_reward for p in self.red_team]
 		infos = [{} for p in self.all_players]
 
 		#get states and return
