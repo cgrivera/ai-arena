@@ -50,7 +50,7 @@ class UserStem(object):
 
 			mpi_print("\n================== SCALING REPORT ======================")
 			mpi_print("AI Arena was able to duplicate the matches "+str(num_duplicates)+" times each.")
-			mpi_print("There will be "+str(num_unused_procs)+" unused processes.")
+			mpi_print("There will be: "+str(num_unused_procs)+" unused processes.")
 			mpi_print("You need to allocate: "+str(min_procs-num_unused_procs-1)+" more processes to duplicate again.")
 			mpi_print("=========================================================\n")
 
@@ -230,22 +230,26 @@ class WorkerStem(object):
 
 			#make the policy
 			pol_type = policy_types[my_pol]
-			if pol_type == "random":
-				policy = RandomPolicy(proxyenv, policy_group_comm)
+			if callable(pol_type):
+				# This can be a class or a method
+				# If it is a class, __init__ will be called with these arguments
+				# otherwise the method will be called
+				policy = pol_type(proxyenv, policy_group_comm)
+			else:
+				if pol_type == "random":
+					policy = RandomPolicy(proxyenv, policy_group_comm)
 
-			elif pol_type == "ppo":
-				policy = PPOPolicy(proxyenv, policy_group_comm)
+				elif pol_type == "ppo":
+					policy = PPOPolicy(proxyenv, policy_group_comm)
 
-			elif pol_type == "ppo-lstm":
-				policy = PPOPolicy(proxyenv, policy_group_comm, True)
+				elif pol_type == "ppo-lstm":
+					policy = PPOPolicy(proxyenv, policy_group_comm, True)
 
-			elif pol_type == "hppo" or pol_type == "hippo":
-				policy = HPPOPolicy(proxyenv, policy_group_comm)
+				elif pol_type == "hppo" or pol_type == "hippo":
+					policy = HPPOPolicy(proxyenv, policy_group_comm)
 
-			elif pol_type == "multiagent_random":
-				policy = MARandomPolicy(proxyenv, policy_group_comm)
-
-			# TODO: other policy types here, including custom
+				elif pol_type == "multiagent_random":
+					policy = MARandomPolicy(proxyenv, policy_group_comm)
 
 			# compute full log comms directory for this policy
 			data_dir =  get_dir_for_policy(my_pol, self.log_comms_dir)
