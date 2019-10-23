@@ -3,6 +3,9 @@ import random, os
 from arena5.algos.ppo.ppo1_mod import PPO1
 from stable_baselines.common.policies import MlpPolicy, CnnPolicy, MlpLstmPolicy, CnnLstmPolicy
 
+def PPOLSTMPolicy(env, policy_comm):
+	return PPOPolicy(env, policy_comm, True)
+
 class PPOPolicy():
 
 	def __init__(self, env, policy_comm, use_lstm=False):

@@ -6,24 +6,25 @@ from arena5.core.env_process import EnvironmentProcess
 
 from arena5.algos.random.random_policy import RandomPolicy
 from arena5.algos.multiagent_random.multiagent_random_policy import MARandomPolicy
-from arena5.algos.ppo.ppo import PPOPolicy
+from arena5.algos.ppo.ppo import PPOPolicy, PPOLSTMPolicy
 #from arena5.algos.hppo.hppo import HPPOPolicy
 
 from arena5.core.policy_record import PolicyRecord, get_dir_for_policy
 
-def make_stem(make_env_method, log_comms_dir, obs_spaces, act_spaces):
+def make_stem(make_env_method, log_comms_dir, obs_spaces, act_spaces, additional_policies={}):
 	rank = MPI.COMM_WORLD.Get_rank()
 	if rank == 0:
-		return UserStem(make_env_method, log_comms_dir, obs_spaces, act_spaces) #return an object to control arena
+		# return an object to control arena
+		return UserStem(make_env_method, log_comms_dir, obs_spaces, act_spaces, additional_policies)
 	else:
-		stem = WorkerStem(make_env_method, log_comms_dir, obs_spaces, act_spaces)
+		stem = WorkerStem(make_env_method, log_comms_dir, obs_spaces, act_spaces, additional_policies)
 		while True:
 			stem.loop() #loop indefinitely
 
 
 class UserStem(object):
 
-	def __init__(self, make_env_method, log_comms_dir, obs_spaces, act_spaces):
+	def __init__(self, make_env_method, log_comms_dir, obs_spaces, act_spaces, additional_policies):
 
 		self.global_comm = MPI.COMM_WORLD
 		self.global_rank = self.global_comm.Get_rank()
@@ -77,7 +78,7 @@ class UserStem(object):
 
 class WorkerStem(object):
 
-	def __init__(self, make_env_method, log_comms_dir, obs_spaces, act_spaces):
+	def __init__(self, make_env_method, log_comms_dir, obs_spaces, act_spaces, additional_policies):
 
 		self.global_comm = MPI.COMM_WORLD
 		self.global_rank = self.global_comm.Get_rank()
@@ -85,6 +86,7 @@ class WorkerStem(object):
 		self.log_comms_dir = log_comms_dir
 		self.obs_spaces = obs_spaces
 		self.act_spaces = act_spaces
+		self.additional_policies = additional_policies
 
 	def loop(self):
 		
@@ -228,28 +230,21 @@ class WorkerStem(object):
 			act_spaces = [self.act_spaces[e] for e in my_entities]
 			proxyenv = make_proxy_env(my_entities, obs_spaces, act_spaces, match_group_comm, root_proc)
 
+			#make the collection of policy options
+			available_policies = {
+				"random":RandomPolicy,
+				"ppo":PPOPolicy,
+				"ppo-lstm":PPOLSTMPolicy,
+				"multiagent_random":MARandomPolicy
+			}
+
+			#add custom policies here
+			available_policies.update(self.additional_policies)
+
 			#make the policy
 			pol_type = policy_types[my_pol]
-			if callable(pol_type):
-				# This can be a class or a method
-				# If it is a class, __init__ will be called with these arguments
-				# otherwise the method will be called
-				policy = pol_type(proxyenv, policy_group_comm)
-			else:
-				if pol_type == "random":
-					policy = RandomPolicy(proxyenv, policy_group_comm)
-
-				elif pol_type == "ppo":
-					policy = PPOPolicy(proxyenv, policy_group_comm)
-
-				elif pol_type == "ppo-lstm":
-					policy = PPOPolicy(proxyenv, policy_group_comm, True)
-
-				elif pol_type == "hppo" or pol_type == "hippo":
-					policy = HPPOPolicy(proxyenv, policy_group_comm)
-
-				elif pol_type == "multiagent_random":
-					policy = MARandomPolicy(proxyenv, policy_group_comm)
+			policy_maker = available_policies[pol_type]
+			policy = policy_maker(proxyenv, policy_group_comm)
 
 			# compute full log comms directory for this policy
 			data_dir =  get_dir_for_policy(my_pol, self.log_comms_dir)

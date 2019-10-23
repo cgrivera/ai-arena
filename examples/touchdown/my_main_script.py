@@ -13,6 +13,7 @@ from arena5.core.policy_record import *
 import my_config as cfg
 from make_env import make_env
 
+
 arena = make_stem(make_env, cfg.LOG_COMMS_DIR, cfg.OBS_SPACES, cfg.ACT_SPACES)
 
 # --- only the root process will get beyond this point ---
