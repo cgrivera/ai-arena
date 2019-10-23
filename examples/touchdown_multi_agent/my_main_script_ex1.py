@@ -1,9 +1,3 @@
-
-
-# To create a script for the arena, we need to interact with a UserStem object.
-# This object is active only on the root process, and broadcasts commands to the
-# other processes.
-
 import math, time, random
 
 from arena5.core.stems import *
@@ -18,6 +12,7 @@ arena = make_stem(cfg.MAKE_ENV_LOCATION, cfg.LOG_COMMS_DIR, cfg.OBS_SPACES, cfg.
 
 # we define 3 sequential entities being fed to a worker of policy 1
 # this can be dropped in to define any block of 3 entities being fed to the same worker
+# see my_main_script_ex2.py for how to group non-sequential entities
 policy_1_block = [1, 1, 1]
 
 # policy 2 will use ungrouped entities to have one policy 2 worker per entity

@@ -30,7 +30,7 @@ class UserStem(object):
 		self.global_rank = self.global_comm.Get_rank()
 		mpi_print("I am the user stem, at rank", self.global_rank)
 
-	def kickoff(self, match_list, policy_types, steps_per_match, render=False, scale=False):
+	def kickoff(self, match_list, policy_types, steps_per_match, entity_remaps=[], render=False, scale=False):
 
 		#make sure there are enough procs to run the matches
 		min_procs = count_needed_procs(match_list)
@@ -49,6 +49,13 @@ class UserStem(object):
 			num_used_procs = count_needed_procs(match_list)
 			num_unused_procs = avail_procs - num_used_procs
 
+			if len(entity_remaps) > 0:
+				new_emap_list = []
+				for m in entity_remaps:
+					for d in range(num_duplicates):
+						new_emap_list.append(m)
+				entity_remaps = new_emap_list
+
 			mpi_print("\n================== SCALING REPORT ======================")
 			mpi_print("AI Arena was able to duplicate the matches "+str(num_duplicates)+" times each.")
 			mpi_print("There will be: "+str(num_unused_procs)+" unused processes.")
@@ -63,6 +70,9 @@ class UserStem(object):
 
 		#broadcast the number of steps to run each match
 		self.global_comm.bcast(steps_per_match, root=0)
+
+		#broadcast the entity index maps
+		self.global_comm.bcast(entity_remaps, root=0)
 
 		#broadcast if we will be calling render() on environments
 		self.global_comm.bcast(render, root=0)
@@ -99,6 +109,9 @@ class WorkerStem(object):
 		#receive the number of steps to run each match
 		steps_per_match = self.global_comm.bcast(None, root=0)
 
+		#receive the optional entity index maps for non-sequential entities 
+		entity_remaps = self.global_comm.bcast(None, root=0)
+
 		#receive if we will be calling render() on environments
 		will_call_render = self.global_comm.bcast(None, root=0)
 		mpi_print("will render:", will_call_render)
@@ -126,19 +139,27 @@ class WorkerStem(object):
 
 			# Create the rank --> entities mapping ======================================
 			entity_map.append([-1])
-			entity_num = 0
+			entity_nominal_num = 0
 			for entry in m:
 				if isinstance(entry, int):
 					#we have a single entity being controlled by a process
-					entity_map.append([entity_num])
-					entity_num += 1
+					if len(entity_remaps) > 0:
+						emap = entity_remaps[midx]
+						entity_map.append([emap[entity_nominal_num]])
+					else:
+						entity_map.append([entity_nominal_num])
+					entity_nominal_num += 1
 
 				elif isinstance(entry, list):
 					#we have a group of entities being controlled by a process
 					ents = []
 					for e in entry:
-						ents.append(entity_num)
-						entity_num += 1
+						if len(entity_remaps) > 0:
+							emap = entity_remaps[midx]
+							ents.append(emap[entity_nominal_num])
+						else:
+							ents.append(entity_nominal_num)
+						entity_nominal_num += 1
 					entity_map.append(ents)
 
 				else:
