@@ -1,5 +1,6 @@
 
 import sys
+from mpi4py import MPI
 
 def mpi_print(*args):
     print(*args)
@@ -17,3 +18,14 @@ def count_needed_procs(match_list):
 			num_procs += 1 #worker process
 
 	return num_procs
+
+def count_number_scaled_matches(match_list):
+	min_procs = count_needed_procs(match_list)
+	avail_procs = MPI.COMM_WORLD.Get_size()
+	num_duplicates = (avail_procs-1) // (min_procs-1)
+	return len(match_list)*num_duplicates
+
+
+def total_steps_to_match_steps(match_list, total_steps):
+	num_scaled_matches = count_number_scaled_matches(match_list)
+	return total_steps // num_scaled_matches

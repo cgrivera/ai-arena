@@ -8,12 +8,6 @@ from make_env import make_env
 LOG_COMMS_DIR = os.getcwd()+"/log_comms/"
 
 
-# Define where to find the environment
-# if make_env is in this directory, os.getcwd() will suffice
-
-MAKE_ENV_LOCATION = os.getcwd()
-
-
 # Tell the arena what observation and action spaces to expect
 
 temp = make_env()

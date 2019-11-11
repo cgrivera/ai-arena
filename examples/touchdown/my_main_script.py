@@ -19,11 +19,14 @@ arena = make_stem(make_env, cfg.LOG_COMMS_DIR, cfg.OBS_SPACES, cfg.ACT_SPACES)
 # --- only the root process will get beyond this point ---
 
 #this is a list of assignments of entity <---> policy
-match_list = [[1,2], [2,1]]
+match_list = [[5,7]]
 
 #for each policy above, what type of policy is it
-#you can specify a string name or TODO: a path to a custom algo
-policy_types = {1:"ppo", 2:"ppo"}
+#you can specify a string name or a method to create a custom algorithm
+policy_types = {5:"ppo", 7:"random"}
 
 #train with this configuration
 arena.kickoff(match_list, policy_types, 15000, render=True, scale=True)
+
+
+

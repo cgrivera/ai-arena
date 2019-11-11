@@ -11,6 +11,12 @@ arena = make_stem(cfg.MAKE_ENV_LOCATION, cfg.LOG_COMMS_DIR, cfg.OBS_SPACES, cfg.
 
 # --- only the root process will get beyond this point ---
 
-match_list = [[1] for _ in range(3)]
-policy_types = {1:"random"}
-arena.kickoff(match_list, policy_types, 2000000)
+match_list = [[1]]
+policy_types = {1:"ppo"}
+arena.kickoff(match_list, policy_types, 5000000, render=False, scale=False)
+
+# Alternatively, specify calculate a number of steps to run across all matches:
+'''
+steps_per_match = total_steps_to_match_steps(match_list, 5000000)
+arena.kickoff(match_list, policy_types, steps_per_match, render=False, scale=True) # scale=True !
+'''
