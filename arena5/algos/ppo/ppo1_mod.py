@@ -202,7 +202,7 @@ class PPO1(ActorCriticRLModel):
 
         with SetVerbosity(self.verbose), TensorboardWriter(self.graph, self.tensorboard_log, tb_log_name, new_tb_log) \
                 as writer:
-            self._setup_learn(seed)
+            self._setup_learn()
 
             assert issubclass(self.policy, ActorCriticPolicy), "Error: the input policy for the PPO1 model must be " \
                                                                "an instance of common.policies.ActorCriticPolicy."
