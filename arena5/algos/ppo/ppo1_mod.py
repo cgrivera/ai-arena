@@ -342,6 +342,9 @@ class PPO1(ActorCriticRLModel):
                         for idx in range(len(lens)):
                             policy_record.add_result(rews[idx], lens[idx])
 
+                        #save and plot
+                        policy_record.save()
+
                     if len(lenbuffer) > 0:
                         logger.record_tabular("EpLenMean", np.mean(lenbuffer))
                         logger.record_tabular("EpRewMean", np.mean(rewbuffer))
