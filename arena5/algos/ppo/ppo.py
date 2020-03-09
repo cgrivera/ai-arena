@@ -24,15 +24,16 @@ class PPOPolicy():
 			else:
 				pcy = MlpPolicy
 
-		self.model = PPO1(pcy, env, policy_comm, timesteps_per_actorbatch=128, clip_param=0.2, entcoeff=0.01, 
-			optim_epochs=4, optim_stepsize=1e-3, optim_batchsize=64, gamma=0.99, lam=0.95, schedule='linear', 
+		self.model = PPO1(pcy, env, policy_comm, timesteps_per_actorbatch=128, clip_param=0.2, entcoeff=0.01,
+			optim_epochs=4, optim_stepsize=1e-3, optim_batchsize=64, gamma=0.99, lam=0.95, schedule='linear',
 			verbose=1)
-    
+
 
 	def run(self, num_steps, data_dir, policy_record=None):
 
-		if os.path.exists(data_dir+"/ppo_save.pkl"):
+		if os.path.exists(data_dir+"/ppo_save.pkl") or os.path.exists(data_dir+"/ppo_save.zip"):
 			self.model = PPO1.load(data_dir+"ppo_save", self.env, self.comm)
+			print("loaded model from saved file!")
 
 		self.model.learn(num_steps, policy_record)
 

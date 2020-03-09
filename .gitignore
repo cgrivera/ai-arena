@@ -16,3 +16,4 @@ logs
 dev
 log_comms
 dev/
+*.swp
