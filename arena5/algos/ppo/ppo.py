@@ -52,4 +52,3 @@ class PPOPolicy():
 				policy_record.save()
 
 				self.model.save(policy_record.data_dir+"ppo_save")
-

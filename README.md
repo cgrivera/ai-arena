@@ -1,4 +1,6 @@
+# AI Arena
 
+version 1.5.0
 
 ## Installation
 
@@ -13,7 +15,7 @@ conda install -c conda-forge mpi4py
 
 ````
 
-## Examples
+## Run Examples
 
 ```` sh
 cd examples/touchdown
