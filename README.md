@@ -15,7 +15,7 @@ conda install -c conda-forge mpi4py
 
 ````
 
-## Examples
+## Run Examples
 
 ```` sh
 cd examples/touchdown
