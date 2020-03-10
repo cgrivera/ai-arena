@@ -192,6 +192,26 @@ class PPO1(ActorCriticRLModel):
                 self.compute_losses = tf_util.function([obs_ph, old_pi.obs_ph, action_ph, atarg, ret, lrmult],
                                                        losses)
 
+
+    def evaluate(self, total_timesteps):
+
+        local_steps = int(total_timesteps / self.comm.Get_size())
+        steps = 0
+        observation = self.env.reset()
+        
+        while steps < local_steps:
+        
+            action, _, _, _ = self.policy_pi.step(observation.reshape(-1, *observation.shape))
+
+            #step environment
+            observation, reward, done, info = self.env.step(action)
+            if done:
+                observation = self.env.reset()
+
+            steps += 1
+
+
+
     def learn(self, total_timesteps, policy_record=None, callback=None, seed=None, log_interval=100, tb_log_name="PPO1",
               reset_num_timesteps=True):
 

@@ -4,14 +4,14 @@ from arena5.core.utils import mpi_print
 
 class EnvironmentProcess():
 
-	def __init__(self, make_env_method, global_comm, local_comm, match_root_rank, call_render=False):
+	def __init__(self, make_env_method, global_comm, local_comm, match_root_rank, call_render=False, env_kwargs={}):
 
 		if isinstance(make_env_method, str):
 			sys.path.append(make_env_method)
 			from make_env import make_env
-			self.env = make_env()
+			self.env = make_env(**env_kwargs)
 		else:
-			self.env = make_env_method()
+			self.env = make_env_method(**env_kwargs)
 
 		mpi_print("made env")
 

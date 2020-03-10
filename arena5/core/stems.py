@@ -6,7 +6,7 @@ from arena5.core.env_process import EnvironmentProcess
 
 from arena5.algos.random.random_policy import RandomPolicy
 from arena5.algos.multiagent_random.multiagent_random_policy import MARandomPolicy
-from arena5.algos.ppo.ppo import PPOPolicy, PPOLSTMPolicy
+from arena5.algos.ppo.ppo import PPOPolicy, PPOLSTMPolicy, PPOPolicyEval, PPOLSTMPolicyEval
 #from arena5.algos.hppo.hppo import HPPOPolicy
 
 from arena5.core.policy_record import PolicyRecord, get_dir_for_policy
@@ -30,7 +30,7 @@ class UserStem(object):
 		self.global_rank = self.global_comm.Get_rank()
 		mpi_print("I am the user stem, at rank", self.global_rank)
 
-	def kickoff(self, match_list, policy_types, steps_per_match, entity_remaps=[], render=False, scale=False):
+	def kickoff(self, match_list, policy_types, steps_per_match, entity_remaps=[], render=False, scale=False, env_kwargs={}):
 
 		#make sure there are enough procs to run the matches
 		min_procs = count_needed_procs(match_list)
@@ -77,6 +77,9 @@ class UserStem(object):
 		#broadcast if we will be calling render() on environments
 		self.global_comm.bcast(render, root=0)
 
+		#broadcast any environment kwargs
+		self.global_comm.bcast(env_kwargs, root=0)
+
 		#create some unused groups - need to call this from root for it to work in other procs
 		temp_match_group_comm = self.global_comm.Create(self.global_comm.group.Excl([]))
 		temp_pol_group_comm = self.global_comm.Create(self.global_comm.group.Excl([]))
@@ -115,6 +118,9 @@ class WorkerStem(object):
 		#receive if we will be calling render() on environments
 		will_call_render = self.global_comm.bcast(None, root=0)
 		mpi_print("will render:", will_call_render)
+
+		#receive any environment kwargs
+		env_kwargs = self.global_comm.bcast(None, root=0)
 
 		#figure out mappings from ranks to policies, matches, entities
 		policies_flat = [0] 	#index=rank, entry=policy number, root proc=0, envs=-1
@@ -217,7 +223,7 @@ class WorkerStem(object):
 
 		if my_pol == -1:
 			mpi_print("I am an environment")
-			self.process = EnvironmentProcess(self.make_env_method, self.global_comm, match_group_comm, root_proc, will_call_render)
+			self.process = EnvironmentProcess(self.make_env_method, self.global_comm, match_group_comm, root_proc, will_call_render, env_kwargs=env_kwargs)
 			temp_pol_group_comm = self.global_comm.Create(self.global_comm.group.Excl([]))
 			self.process.proxy_sync()
 			self.process.run(steps_per_match)
@@ -255,7 +261,9 @@ class WorkerStem(object):
 			available_policies = {
 				"random":RandomPolicy,
 				"ppo":PPOPolicy,
+				"ppo-eval":PPOPolicyEval,
 				"ppo-lstm":PPOLSTMPolicy,
+				"ppo-lstm-eval":PPOLSTMPolicyEval,
 				"multiagent_random":MARandomPolicy
 			}
 

@@ -39,7 +39,7 @@ class gym_proxy_env():
 		return state
 
 	def step(self, action):
-
+		
 		#make np array if it is not already
 		action = np.asarray([action])
 
