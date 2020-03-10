@@ -1,4 +1,6 @@
+AI Arena
 
+version 1.5.0
 
 ## Installation
 
