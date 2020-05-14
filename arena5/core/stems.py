@@ -5,8 +5,8 @@ from arena5.core.proxy_env import make_proxy_env
 from arena5.core.env_process import EnvironmentProcess
 
 from arena5.algos.random.random_policy import RandomPolicy
-from arena5.algos.multiagent_random.multiagent_random_policy import MARandomPolicy
-from arena5.algos.ppo.ppo import PPOPolicy, PPOLSTMPolicy, PPOPolicyEval, PPOLSTMPolicyEval
+# from arena5.algos.multiagent_random.multiagent_random_policy import MARandomPolicy
+# from arena5.algos.ppo.ppo import PPOPolicy, PPOLSTMPolicy, PPOPolicyEval, PPOLSTMPolicyEval
 #from arena5.algos.hppo.hppo import HPPOPolicy
 
 from arena5.core.policy_record import PolicyRecord, get_dir_for_policy
@@ -123,8 +123,8 @@ class WorkerStem(object):
 		env_kwargs = self.global_comm.bcast(None, root=0)
 
 		#figure out mappings from ranks to policies, matches, entities
-		policies_flat = [0] 	#index=rank, entry=policy number, root proc=0, envs=-1
-		match_num_flat = [0] 	#index=rank, entry=match number, root proc=0
+		policies_flat = [-2] 	#index=rank, entry=policy number, root proc=0, envs=-1
+		match_num_flat = [-2] 	#index=rank, entry=match number, root proc=0
 		entity_map = [[-1]]		#index=rank, entry=[entity numbers], root proc=[-1], envs=[-1]
 
 		#populate the above mappings
@@ -260,11 +260,11 @@ class WorkerStem(object):
 			#make the collection of policy options
 			available_policies = {
 				"random":RandomPolicy,
-				"ppo":PPOPolicy,
-				"ppo-eval":PPOPolicyEval,
-				"ppo-lstm":PPOLSTMPolicy,
-				"ppo-lstm-eval":PPOLSTMPolicyEval,
-				"multiagent_random":MARandomPolicy
+				# "ppo":PPOPolicy,
+				# "ppo-eval":PPOPolicyEval,
+				# "ppo-lstm":PPOLSTMPolicy,
+				# "ppo-lstm-eval":PPOLSTMPolicyEval,
+				# "multiagent_random":MARandomPolicy
 			}
 
 			#add custom policies here
