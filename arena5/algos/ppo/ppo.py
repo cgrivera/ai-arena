@@ -14,7 +14,7 @@ def PPOPolicyEval(env, policy_comm):
 
 class PPOPolicy():
 
-	def __init__(self, env, policy_comm, use_lstm=False, eval_mode=False):
+	def __init__(self, env, policy_comm, use_lstm=False, eval_mode=False, external_saved_file=None):
 		self.env = env
 		self.comm = policy_comm
 
@@ -36,10 +36,14 @@ class PPOPolicy():
 
 		self.eval_mode = eval_mode
 
+		self.external_saved_file=external_saved_file
+
 
 	def run(self, num_steps, data_dir, policy_record=None):
 
-		if os.path.exists(data_dir+"/ppo_save.pkl") or os.path.exists(data_dir+"/ppo_save.zip"):
+		if self.external_saved_file is not None:
+			self.model = PPO1.load(self.external_saved_file, self.env, self.comm)
+		elif os.path.exists(data_dir+"/ppo_save.pkl") or os.path.exists(data_dir+"/ppo_save.zip"):
 			self.model = PPO1.load(data_dir+"ppo_save", self.env, self.comm)
 			print("loaded model from saved file!")
 

@@ -1,3 +1,4 @@
+*.swp
 *.pyc
 *.rdb
 *.h5
