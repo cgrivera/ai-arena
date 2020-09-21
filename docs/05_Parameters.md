@@ -29,6 +29,10 @@ match_list = [
 ]
 
 #define custom parameters for each match environment
+red = (1.0,0,0)
+blue = (0,0,1.0)
+green = (0,1.0,0)
+
 colors = [
 	{"clr1":blue, "clr2":red}, 
 	{"clr1":blue, "clr2":green}, 
