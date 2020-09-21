@@ -9,7 +9,9 @@ def get_dir_for_policy(policy_id, log_comms_dir):
 
 class PolicyRecord():
 
-	def __init__(self, policy_id, log_comms_dir):
+	def __init__(self, policy_id, log_comms_dir, plot_color="#eb0033"):
+
+		self.plot_color = plot_color
 
 		self.ep_results = []
 		self.ep_lengths = []
@@ -36,7 +38,7 @@ class PolicyRecord():
 		pickle.dump(data, open(self.data_dir+"policy_record.p", "wb"))
 
 		#save a plot also
-		plot_policy_records([self], [20, 50, 100], [0.1, 0.3, 1.0], self.data_dir+"plot.png", colors=["#eb0033"])
+		plot_policy_records([self], [20, 50, 100], [0.1, 0.3, 1.0], self.data_dir+"plot.png", colors=[self.plot_color])
 
 	# WARNING: This will overwrite current recorded data
 	def load(self):

@@ -14,7 +14,12 @@ def PPOPolicyEval(env, policy_comm):
 
 class PPOPolicy():
 
-	def __init__(self, env, policy_comm, use_lstm=False, eval_mode=False, external_saved_file=None):
+	def __init__(self, env, policy_comm, use_lstm=False, eval_mode=False, external_saved_file=None,
+			timesteps_per_actorbatch=128, clip_param=0.2, entcoeff=0.01,
+			optim_epochs=4, optim_stepsize=1e-3, optim_batchsize=64, gamma=0.99, lam=0.95, schedule='linear',
+			verbose=1
+		):
+
 		self.env = env
 		self.comm = policy_comm
 
@@ -30,9 +35,17 @@ class PPOPolicy():
 			else:
 				pcy = MlpPolicy
 
-		self.model = PPO1(pcy, env, policy_comm, timesteps_per_actorbatch=128, clip_param=0.2, entcoeff=0.01,
-			optim_epochs=4, optim_stepsize=1e-3, optim_batchsize=64, gamma=0.99, lam=0.95, schedule='linear',
-			verbose=1)
+		self.model = PPO1(pcy, env, policy_comm, 
+			timesteps_per_actorbatch=timesteps_per_actorbatch, 
+			clip_param=clip_param, 
+			entcoeff=entcoeff,
+			optim_epochs=optim_epochs, 
+			optim_stepsize=optim_stepsize, 
+			optim_batchsize=optim_batchsize, 
+			gamma=gamma, 
+			lam=lam, 
+			schedule=schedule,
+			verbose=verbose)
 
 		self.eval_mode = eval_mode
 

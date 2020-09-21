@@ -11,10 +11,10 @@ arena = make_stem(cfg.MAKE_ENV_LOCATION, cfg.LOG_COMMS_DIR, cfg.OBS_SPACES, cfg.
 
 # --- only the root process will get beyond this point ---
 
-rounds = 100
+rounds = 20
 pop = 3
 repeat_matches = 3
-steps_per_round = 20000
+steps_per_round = 83333
 
 # ---------------------------------------
 
