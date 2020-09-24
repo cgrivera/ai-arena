@@ -5,7 +5,8 @@ import random, colorsys
 #plot episode results from policies, 
 #averaging over windows and displaying with alphas
 #saving to filename
-def plot_policy_records(records, windows, alphas, filename, colors=None, offsets=None):
+def plot_policy_records(records, windows, alphas, filename, colors=None, offsets=None, 
+	episodic=False, fig=None, ax=None):
 
 	default_colors = []
 	hues = [1, 4, 7, 10, 3, 6, 9, 12, 2, 5, 8, 11]
@@ -26,13 +27,16 @@ def plot_policy_records(records, windows, alphas, filename, colors=None, offsets
 		for pr in records:
 			offsets.append(0)
 
-	fig, ax = plt.subplots(1,1,figsize=(12,6))
+	if fig is None:
+		fig, ax = plt.subplots(1,1,figsize=(12,6))
 
 	for widx, windowsize in enumerate(windows):
 
 		alpha = alphas[widx]
 
 		for pridx, pol in enumerate(records):
+
+			ylabel = pol.ylabel
 
 			steps = pol.ep_cumlens
 			results = pol.ep_results
@@ -51,15 +55,34 @@ def plot_policy_records(records, windows, alphas, filename, colors=None, offsets
 					rolling_avg_buffer.pop(0)
 
 					rolling_avg_results.append(np.mean(rolling_avg_buffer))
-					rolling_avg_steps.append(steps[i])
+
+					if episodic:
+						rolling_avg_steps.append(i+1)
+					else:
+						rolling_avg_steps.append(steps[i])
 
 			#plot
 			ax.plot(rolling_avg_steps, rolling_avg_results, color=colors[pridx], alpha=alpha)
 
-	ax.set_xlabel("Training Steps")
-	ax.set_ylabel("Episodic Reward")
+	if episodic:
+		ax.set_xlabel("Episodes")
+	else:
+		ax.set_xlabel("Steps")
+	ax.set_ylabel(ylabel)
+
+	# change .png to _steps.png or _episodes.png
+	if ".png" not in filename:
+		filename = filename + ".png"
+
+	if episodic:
+		filename = filename.replace(".png", "_episodes.png")
+	else:
+		filename = filename.replace(".png", "_steps.png")
 
 	plt.savefig(filename)
+
+	#clear the figure so we dont plot on top of other plots
+	plt.close(fig)
 
 
 def randomRGBPure(hue=None):

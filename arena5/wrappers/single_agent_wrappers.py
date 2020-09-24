@@ -14,7 +14,7 @@ class single_agent_wrapper():
 		self.observation_spaces = [env.observation_space]
 		self.action_spaces = [env.action_space]
 
-	def reset(self, ):
+	def reset(self):
 		return [self.env.reset()]
 
 	def step(self, action):

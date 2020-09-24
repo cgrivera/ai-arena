@@ -39,6 +39,6 @@ colors = [
 plot_colors = {1:blue, 2:red, 3:green}
 
 #train with this configuration
-arena.kickoff(match_list, policy_types, 30000, render=True, scale=True, policy_kwargs=policy_kwargs,
+arena.kickoff(match_list, policy_types, 50000, render=True, scale=True, policy_kwargs=policy_kwargs,
 	env_kwargs=colors, plot_colors=plot_colors)
 
