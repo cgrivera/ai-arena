@@ -45,8 +45,8 @@ for i in range(rounds):
 	best_score = -1000000
 	for p in pool:
 		pr = PolicyRecord(p, cfg.LOG_COMMS_DIR)
-		length = min(len(pr.ep_results), 100)
-		score = np.mean(pr.ep_results[-length:])
+		length = min(len(pr.channels["main"].ep_results), 100)
+		score = np.mean(pr.channels["main"].ep_results[-length:])
 		if score > best_score:
 			best_pol = p
 			best_score = score

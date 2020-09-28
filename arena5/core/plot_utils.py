@@ -7,6 +7,10 @@ import random, colorsys
 #saving to filename
 def plot_policy_records(records, windows, alphas, filename, colors=None, offsets=None, 
 	episodic=False, fig=None, ax=None):
+	
+	# get the main channels if these are record objects
+	if hasattr(records[0], "channels"):
+		records = [r.channels["main"] for r in records]
 
 	default_colors = []
 	hues = [1, 4, 7, 10, 3, 6, 9, 12, 2, 5, 8, 11]

@@ -29,6 +29,7 @@ class gym_proxy_env():
 		self.comm = match_comm
 		self.match_root_rank = match_root_rank
 		self.entity_idx = entity_idx
+		self.is_multiagent = False
 
 	def seed(self, sd):
 		pass
@@ -72,6 +73,7 @@ class ma_proxy_env():
 		self.comm = match_comm
 		self.match_root_rank = match_root_rank
 		self.entity_idxs = entity_idxs
+		self.is_multiagent = True
 
 	def seed(self, sd):
 		pass
