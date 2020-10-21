@@ -49,7 +49,7 @@ class PPO1(ActorCriticRLModel):
     def __init__(self, policy, env, comm, gamma=0.99, timesteps_per_actorbatch=256, clip_param=0.2, entcoeff=0.01,
                  optim_epochs=4, optim_stepsize=1e-3, optim_batchsize=64, lam=0.95, adam_epsilon=1e-5,
                  schedule='linear', verbose=0, tensorboard_log=None,
-                 _init_setup_model=True, policy_kwargs=None, full_tensorboard_log=False):
+                 _init_setup_model=True, policy_kwargs=None, full_tensorboard_log=False, clip_rewards=False):
 
         super().__init__(policy=policy, env=env, verbose=verbose, requires_vec_env=False,
                          _init_setup_model=_init_setup_model, policy_kwargs=policy_kwargs)
@@ -81,6 +81,8 @@ class PPO1(ActorCriticRLModel):
         self.initial_state = None
         self.summary = None
         self.episode_reward = None
+
+        self.clip_rewards = clip_rewards
 
         self.comm = comm
 
@@ -232,7 +234,7 @@ class PPO1(ActorCriticRLModel):
 
                 # Prepare for rollouts
                 # Note we are using modified traj_gen
-                seg_gen = traj_segment_generator(self.policy_pi, self.env, self.timesteps_per_actorbatch, local_steps)
+                seg_gen = traj_segment_generator(self.policy_pi, self.env, self.timesteps_per_actorbatch, local_steps, self.clip_rewards)
 
                 episodes_so_far = 0
                 timesteps_so_far = 0

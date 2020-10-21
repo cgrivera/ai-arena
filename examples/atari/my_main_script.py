@@ -11,7 +11,7 @@ arena = make_stem(cfg.MAKE_ENV_LOCATION, cfg.LOG_COMMS_DIR, cfg.OBS_SPACES, cfg.
 
 # --- only the root process will get beyond this point ---
 
-match_list = [[1]]*9
+match_list = [[1]]#*9
 policy_types = {1:"ppo"}
 # arena.kickoff(match_list, policy_types, 5000000, render=False, scale=False)
 

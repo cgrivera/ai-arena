@@ -1,7 +1,7 @@
 import numpy as np 
 import cv2
 from arena5.core.utils import *
-from gym.spaces import Box
+from gym.spaces import Box, Discrete
 
 # wrapper to make a standard gym env compatible with the arena,
 # by re-framing it as a multi-agent problem with only one agent
@@ -18,6 +18,7 @@ class single_agent_wrapper():
 		return [self.env.reset()]
 
 	def step(self, action):
+		action = self.prepare_action(action)
 		s, r, d, info = self.env.step(action)
 
 		# for i in range(4):
@@ -26,6 +27,15 @@ class single_agent_wrapper():
 		# 	cv2.waitKey(1)
 		#mpi_print(r)
 		return [s], [r], d, [info]
+
+	def prepare_action(self, action):
+		action = np.asarray(action)
+		if isinstance(self.env.action_space, Discrete):
+			action = int(np.squeeze(action))
+		else:
+			while len(action.shape)>1:
+				action = action[0]
+		return action
 
 	def render(self):
 		self.env.render()

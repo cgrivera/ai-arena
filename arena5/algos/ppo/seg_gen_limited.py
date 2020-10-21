@@ -1,12 +1,13 @@
 import gym
 import numpy as np
+import copy
 
 from stable_baselines.common.vec_env import VecEnv
 
 # ARENA modified version of traj_segment_generator which is given a max number of total steps,
 # and will return a truncated rollout when this number is reached
 
-def traj_segment_generator(policy, env, horizon, total_steps, reward_giver=None, gail=False):
+def traj_segment_generator(policy, env, horizon, total_steps, clip_rewards, reward_giver=None, gail=False):
     """
     Compute target value using TD(lambda) estimator, and advantage with GAE(lambda)
     :param policy: (MLPPolicy) the policy
@@ -100,7 +101,10 @@ def traj_segment_generator(policy, env, horizon, total_steps, reward_giver=None,
             observation, true_reward, done, info = env.step(clipped_action[0])
         else:
             observation, reward, done, info = env.step(clipped_action[0])
-            true_reward = reward
+            true_reward = copy.deepcopy(reward)
+            if clip_rewards:
+                reward = np.clip(reward, -1.0, 1.0)
+
         rewards[i] = reward
         true_rewards[i] = true_reward
         dones[i] = done

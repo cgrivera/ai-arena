@@ -1,6 +1,13 @@
 
 import sys
+import time
 from mpi4py import MPI
+
+def mpi_lag(wait=2.0):
+	r = float(MPI.COMM_WORLD.Get_rank())
+	sz = float(MPI.COMM_WORLD.Get_size())
+	delay = (r/sz)*wait
+	time.sleep(delay)
 
 def mpi_print(*args):
     print(*args)

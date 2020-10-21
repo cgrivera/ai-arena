@@ -6,7 +6,7 @@ import random, colorsys
 #averaging over windows and displaying with alphas
 #saving to filename
 def plot_policy_records(records, windows, alphas, filename, colors=None, offsets=None, 
-	episodic=False, fig=None, ax=None):
+	episodic=False, fig=None, ax=None, return_figure=False):
 	
 	# get the main channels if these are record objects
 	if hasattr(records[0], "channels"):
@@ -83,10 +83,12 @@ def plot_policy_records(records, windows, alphas, filename, colors=None, offsets
 	else:
 		filename = filename.replace(".png", "_steps.png")
 
-	plt.savefig(filename)
-
-	#clear the figure so we dont plot on top of other plots
-	plt.close(fig)
+	if return_figure:
+		return fig, ax
+	else:
+		plt.savefig(filename)
+		#clear the figure so we dont plot on top of other plots
+		plt.close(fig)
 
 
 def randomRGBPure(hue=None):
