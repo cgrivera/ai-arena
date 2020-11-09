@@ -35,4 +35,7 @@ def count_number_scaled_matches(match_list):
 
 def total_steps_to_match_steps(match_list, total_steps):
 	num_scaled_matches = count_number_scaled_matches(match_list)
+	if num_scaled_matches <= 0:
+		procs_needed = count_needed_procs(match_list)
+		raise ValueError("Not enough processes have been allocated, need: "+str(procs_needed))
 	return total_steps // num_scaled_matches
