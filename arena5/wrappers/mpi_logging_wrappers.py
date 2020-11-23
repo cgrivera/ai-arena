@@ -4,7 +4,7 @@
 # and adds them to a policy record
 class MPISynchronizedPRUpdater():
 
-    def __init__(self, proxy_env, policy_comms, policy_record=None, save_every=20, channel="main"):
+    def __init__(self, proxy_env, policy_comms, policy_record=None, save_every=20, sum_over=False, channel="main"):
 
         self.multiagent = proxy_env.is_multiagent
         if self.multiagent:
@@ -16,10 +16,12 @@ class MPISynchronizedPRUpdater():
             self.observation_space = proxy_env.observation_space
             self.action_space = proxy_env.action_space
 
+        self.sum_over = sum_over
+
         self.env = proxy_env
         self.comm = policy_comms
-        self.ep_len = [0.0]*self.num_agents
-        self.ep_rew = [0.0]*self.num_agents
+        self.ep_len = ([0.0]*self.num_agents if not self.sum_over else [0.0])
+        self.ep_rew = ([0.0]*self.num_agents if not self.sum_over else [0.0])
         self.policy_record = policy_record
         self.channel = channel
 
@@ -27,8 +29,8 @@ class MPISynchronizedPRUpdater():
         self.episodes_until_save = self.save_every
 
     def reset(self):
-        self.ep_len = [0.0]*self.num_agents
-        self.ep_rew = [0.0]*self.num_agents
+        self.ep_len = ([0.0]*self.num_agents if not self.sum_over else [0.0])
+        self.ep_rew = ([0.0]*self.num_agents if not self.sum_over else [0.0])
         return self.env.reset()
 
     def step(self, action):
@@ -36,9 +38,13 @@ class MPISynchronizedPRUpdater():
 
         #synchronize results ---------------------------------
         if self.multiagent:
-            for i in range(len(r)):
-                self.ep_len[i] += 1.0 
-                self.ep_rew[i] += r[i]
+            if self.sum_over:
+                self.ep_len[0] += 1.0
+                self.ep_rew[0] += sum(r)
+            else:
+                for i in range(len(r)):
+                    self.ep_len[i] += 1.0 
+                    self.ep_rew[i] += r[i]
         else:
             self.ep_len[0] += 1.0
             self.ep_rew[0] += r

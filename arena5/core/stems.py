@@ -8,6 +8,9 @@ from arena5.algos.random.random_policy import RandomPolicy
 from arena5.algos.multiagent_random.multiagent_random_policy import MARandomPolicy
 from arena5.algos.ppo.ppo import PPOPolicy, PPOLSTMPolicy, PPOPolicyEval, PPOLSTMPolicyEval
 from arena5.algos.sac.sac_policy import SACPolicy
+from arena5.algos.ddpg.ddpg_policy import DDPGPolicy
+from arena5.algos.maddpg.maddpg_policy import MADDPGPolicy
+from arena5.algos.masac.masac_policy import MASACPolicy
 #from arena5.algos.hppo.hppo import HPPOPolicy
 
 from arena5.core.policy_record import PolicyRecord, get_dir_for_policy
@@ -294,7 +297,10 @@ class WorkerStem(object):
 				"ppo-lstm":PPOLSTMPolicy,
 				"ppo-lstm-eval":PPOLSTMPolicyEval,
 				"multiagent_random":MARandomPolicy,
-				"sac":SACPolicy
+				"sac":SACPolicy,
+				"masac":MASACPolicy,
+				"ddpg":DDPGPolicy,
+				"maddpg":MADDPGPolicy
 			}
 
 			#add custom policies here

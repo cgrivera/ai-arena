@@ -7,14 +7,19 @@ from arena5.core.plot_utils import *
 
 import my_config as cfg
 
+
+mpi_lag(wait=2.0)
+
 arena = make_stem(cfg.MAKE_ENV_LOCATION, cfg.LOG_COMMS_DIR, cfg.OBS_SPACES, cfg.ACT_SPACES)
 
 # --- only the root process will get beyond this point ---
 
-match_list = [[1]]*9
-policy_types = {1:"ppo"}
-# arena.kickoff(match_list, policy_types, 5000000, render=False, scale=False)
+# calling this policy #2 so we can run alongside the other main script
+match_list = [[[2, 2]]]
+policy_types = {2:"masac"}
 
 # Specify number of steps to run across all matches:
-steps_per_match = total_steps_to_match_steps(match_list, 5000000)
+total_steps = 10000000
+steps_per_match = total_steps_to_match_steps(match_list, total_steps)
+
 arena.kickoff(match_list, policy_types, steps_per_match, render=False, scale=True)
