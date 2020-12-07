@@ -39,4 +39,4 @@ cd log_comms/policy_2/plot.png
  - Additional examples available in the exmamples directory
 
 ## License
-GPL v3
+MIT
