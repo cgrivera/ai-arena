@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import random, os
 
 from arena5.algos.ppo.ppo1_mod import PPO1

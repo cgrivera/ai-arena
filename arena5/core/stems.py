@@ -1,4 +1,4 @@
-
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 from mpi4py import MPI
 from arena5.core.utils import mpi_print, count_needed_procs
 from arena5.core.proxy_env import make_proxy_env

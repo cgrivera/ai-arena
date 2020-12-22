@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import random
 import os
 import numpy as np

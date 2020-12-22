@@ -1,5 +1,8 @@
 # AI Arena
 
+The AI Arena a scalable framework with flexible abstractions for distributed multi-agent reinforcement learning. The Framework extends the utility of the the Open AI gym interface to allow greater flexibility in learning control policies across multiple agents with heterogeneous learning strategies and localized views of the environment.
+
+## Version 
 version 1.5.0
 
 ## Installation

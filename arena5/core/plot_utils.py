@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import matplotlib.pyplot as plt
 import numpy as np
 import random, colorsys

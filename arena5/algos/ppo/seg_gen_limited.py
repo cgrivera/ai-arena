@@ -1,3 +1,5 @@
+
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import gym
 import numpy as np
 import copy

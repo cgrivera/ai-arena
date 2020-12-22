@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import numpy as np
 import scipy.signal
 import math

@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 from copy import deepcopy
 import numpy as np
 import torch
@@ -312,3 +313,5 @@ if __name__ == '__main__':
          ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), 
          gamma=args.gamma, seed=args.seed, epochs=args.epochs,
          logger_kwargs=logger_kwargs)
+
+

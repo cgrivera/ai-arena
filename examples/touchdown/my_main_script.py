@@ -1,4 +1,4 @@
-
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 
 # To create a script for the arena, we need to interact with a UserStem object.
 # This object is active only on the root process, and broadcasts commands to the

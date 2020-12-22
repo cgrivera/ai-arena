@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import numpy as np 
 import cv2
 from arena5.core.utils import *

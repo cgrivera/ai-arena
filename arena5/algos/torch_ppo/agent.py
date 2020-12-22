@@ -1,5 +1,4 @@
-#    def run(self, num_steps, data_dir, policy_record=None):
-
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import torch
 from torch.distributions import Categorical
 import time

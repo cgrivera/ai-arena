@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import random
 from arena5.core.utils import mpi_print
 from arena5.wrappers.mpi_logging_wrappers import MPISynchronizedPRUpdater

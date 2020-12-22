@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import os
 from arena5.core.stems import make_stem
 from arena5.core.policy_record import PolicyRecord, plot_policy_records
