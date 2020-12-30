@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import sys
 import numpy as np
 from arena5.core.utils import mpi_print

@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 from setuptools import setup, find_packages
 
 setup(name='arena5',

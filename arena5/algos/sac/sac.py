@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 from copy import deepcopy
 import itertools
 import numpy as np

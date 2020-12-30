@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import gym
 from mpi4py import MPI
 from arena5.wrappers.single_agent_wrappers import *

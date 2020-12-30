@@ -1,4 +1,4 @@
-
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 
 # gym wrapper which maintains episode results across all workers
 # and adds them to a policy record

@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 from Touchdown import TouchdownEnv
 
 # 2 v 2 touchdown environment

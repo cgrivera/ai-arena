@@ -1,3 +1,5 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
+
 # Touchdown is a multiagent game in which both teams are trying to reach
 # the opposing end of the play area
 

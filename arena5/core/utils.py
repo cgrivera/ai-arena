@@ -1,4 +1,4 @@
-
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import sys
 import time
 from mpi4py import MPI

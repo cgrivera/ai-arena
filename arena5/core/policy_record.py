@@ -1,3 +1,4 @@
+# ©2020 Johns Hopkins University Applied Physics Laboratory LLC.
 import pickle, os
 from shutil import copy
 import matplotlib.pyplot as plt
