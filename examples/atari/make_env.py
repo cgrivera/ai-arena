@@ -5,7 +5,7 @@ from mpi4py import MPI
 
 def make_env():
 
-	env = wrap_deepmind(make_atari("PongNoFrameskip-v4"))
+	env = wrap_deepmind(make_atari("BreakoutNoFrameskip-v4"))
 	workerseed = MPI.COMM_WORLD.Get_rank()*10000
 	env.seed(workerseed)
 
