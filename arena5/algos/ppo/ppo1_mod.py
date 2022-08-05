@@ -87,7 +87,7 @@ class PPO1(ActorCriticRLModel):
         self.clip_rewards = clip_rewards
 
         self.comm = comm
-        self.verbose = gym.logger.DISABLED
+        #gym.logger.DISABLED = gym.logger.DISABLED
 
         if _init_setup_model:
             self.setup_model()
@@ -100,7 +100,7 @@ class PPO1(ActorCriticRLModel):
         return policy.obs_ph, action_ph, policy.deterministic_action
 
     def setup_model(self):
-        with SetVerbosity(self.verbose):
+        with SetVerbosity(gym.logger.DISABLED):
 
             self.graph = tf.Graph()
             with self.graph.as_default():
@@ -225,7 +225,7 @@ class PPO1(ActorCriticRLModel):
 
         new_tb_log = self._init_num_timesteps(reset_num_timesteps)
 
-        with SetVerbosity(self.verbose), TensorboardWriter(self.graph, self.tensorboard_log, tb_log_name, new_tb_log) \
+        with SetVerbosity(gym.logger.DISABLED), TensorboardWriter(self.graph, self.tensorboard_log, tb_log_name, new_tb_log) \
                 as writer:
             self._setup_learn()
 
@@ -383,7 +383,7 @@ class PPO1(ActorCriticRLModel):
                     logger.record_tabular("EpisodesSoFar", episodes_so_far)
                     logger.record_tabular("TimestepsSoFar", self.num_timesteps)
                     logger.record_tabular("TimeElapsed", time.time() - t_start)
-                    if self.verbose >= 1 and self.comm.Get_rank() == 0:
+                    if gym.logger.DISABLED >= 1 and self.comm.Get_rank() == 0:
                         logger.dump_tabular()
 
         return self
@@ -400,7 +400,7 @@ class PPO1(ActorCriticRLModel):
             "lam": self.lam,
             "adam_epsilon": self.adam_epsilon,
             "schedule": self.schedule,
-            "verbose": self.verbose,
+            "verbose": gym.logger.DISABLED,
             "policy": self.policy,
             "observation_space": self.observation_space,
             "action_space": self.action_space,
