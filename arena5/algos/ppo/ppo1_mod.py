@@ -87,6 +87,7 @@ class PPO1(ActorCriticRLModel):
         self.clip_rewards = clip_rewards
 
         self.comm = comm
+        self.verbose = gym.logger.DISABLED
 
         if _init_setup_model:
             self.setup_model()
