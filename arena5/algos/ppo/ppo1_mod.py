@@ -100,8 +100,9 @@ class PPO1(ActorCriticRLModel):
         return policy.obs_ph, action_ph, policy.deterministic_action
 
     def setup_model(self):
+        gym.logger.MIN_LEVEL = gym.logger.DISABLED
         with SetVerbosity(self.verbose):
-            gym.logger.MIN_LEVEL = gym.logger.DISABLED
+            
             self.graph = tf.Graph()
             with self.graph.as_default():
                 self.sess = tf_util.single_threaded_session(graph=self.graph)
