@@ -15,7 +15,7 @@ from stable_baselines.common.policies import ActorCriticPolicy
 from stable_baselines.common.mpi_adam import MpiAdam
 from stable_baselines.common.mpi_moments import mpi_moments
 from stable_baselines.trpo_mpi.utils import add_vtarg_and_adv
-from stable_baselines.a2c.utils import total_episode_reward_logger
+from stable_baselines.common.tf_util import total_episode_reward_logger
 from stable_baselines.common.misc_util import flatten_lists
 
 from arena5.algos.ppo.seg_gen_limited import traj_segment_generator
